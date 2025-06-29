@@ -27,7 +27,7 @@ async def chat_with_character(request: Request):
                 "Content-Type": "application/json"
             },
             json={
-                "model": "mixtral-8x7b",
+                "model": "mixtral-8x7b-instruct",
                 "messages": [
                     {"role": "system", "content": "You are a friendly and insightful member of the Succinct Labs community."},
                     {"role": "user", "content": prompt}
@@ -50,5 +50,4 @@ async def chat_with_character(request: Request):
         print("❌ ERROR:")
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
-
 
