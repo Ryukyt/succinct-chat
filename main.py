@@ -1,13 +1,11 @@
-print("✅ APP STARTED")
-
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import openai
 import os
+import traceback
 
 app = FastAPI()
 
-# Load OpenAI API Key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.get("/")
@@ -19,9 +17,12 @@ async def chat_with_character(request: Request):
     try:
         data = await request.json()
         prompt = data.get("prompt", "")
+        print(f"📩 Received prompt: {prompt}")
 
-        print(f"User prompt: {prompt}")
+        # DEBUG: Show API Key status
+        print("🔑 API Key is present:", bool(openai.api_key))
 
+        # Generate completion
         completion = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -31,8 +32,10 @@ async def chat_with_character(request: Request):
         )
 
         reply = completion.choices[0].message['content']
+        print("✅ Generated reply:", reply)
         return {"reply": reply}
 
     except Exception as e:
-        print("❌ Error occurred:", str(e))
+        print("❌ FULL ERROR:")
+        traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
