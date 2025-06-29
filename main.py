@@ -7,7 +7,6 @@ import traceback
 import os
 
 app = FastAPI()
-
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 @app.get("/")
@@ -38,11 +37,18 @@ async def chat_with_character(request: Request):
         )
 
         res = response.json()
-        reply = res["choices"][0]["message"]["content"]
-        print("✅ Reply:", reply)
-        return {"reply": reply}
+        print("🧾 Full Groq response:", res)
+
+        # Check if 'choices' exists
+        if "choices" in res and res["choices"]:
+            reply = res["choices"][0]["message"]["content"]
+            print("✅ Reply:", reply)
+            return {"reply": reply}
+        else:
+            return JSONResponse(status_code=500, content={"error": "Invalid response from Groq", "details": res})
 
     except Exception as e:
         print("❌ ERROR:")
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
+
