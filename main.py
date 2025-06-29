@@ -2,14 +2,13 @@ print("✅ APP STARTED")
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from openai import OpenAI
-import os
+import requests
 import traceback
+import os
 
 app = FastAPI()
 
-# Initialize OpenAI client with the environment variable
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 @app.get("/")
 def read_root():
@@ -20,21 +19,30 @@ async def chat_with_character(request: Request):
     try:
         data = await request.json()
         prompt = data.get("prompt", "")
-        print(f"📩 Received prompt: {prompt}")
+        print(f"📩 Prompt: {prompt}")
 
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",  # You can change to "gpt-4o" if needed
-            messages=[
-                {"role": "system", "content": "You are a member of Succinct Labs."},
-                {"role": "user", "content": prompt}
-            ]
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {GROQ_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "mixtral-8x7b-32768",
+                "messages": [
+                    {"role": "system", "content": "You are a friendly and insightful member of the Succinct Labs community."},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.7
+            }
         )
 
-        reply = response.choices[0].message.content
-        print("✅ Generated reply:", reply)
+        res = response.json()
+        reply = res["choices"][0]["message"]["content"]
+        print("✅ Reply:", reply)
         return {"reply": reply}
 
     except Exception as e:
-        print("❌ FULL ERROR:")
+        print("❌ ERROR:")
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
