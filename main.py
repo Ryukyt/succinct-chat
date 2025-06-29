@@ -1,12 +1,15 @@
+print("✅ APP STARTED")
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-import openai
+from openai import OpenAI
 import os
 import traceback
 
 app = FastAPI()
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Initialize OpenAI client with the environment variable
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.get("/")
 def read_root():
@@ -19,19 +22,15 @@ async def chat_with_character(request: Request):
         prompt = data.get("prompt", "")
         print(f"📩 Received prompt: {prompt}")
 
-        # DEBUG: Show API Key status
-        print("🔑 API Key is present:", bool(openai.api_key))
-
-        # Generate completion
-        completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",  # You can change to "gpt-4o" if needed
             messages=[
                 {"role": "system", "content": "You are a member of Succinct Labs."},
                 {"role": "user", "content": prompt}
             ]
         )
 
-        reply = completion.choices[0].message['content']
+        reply = response.choices[0].message.content
         print("✅ Generated reply:", reply)
         return {"reply": reply}
 
