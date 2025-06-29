@@ -1,9 +1,13 @@
-print("APP STARTED ✅")
+print("✅ APP STARTED")
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"status": "✅ App is Live"}
 
 @app.post("/chat")
 async def chat_with_character(request: Request):
